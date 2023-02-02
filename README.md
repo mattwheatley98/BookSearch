@@ -10,6 +10,7 @@ This is a simple book search app that makes an HTTP request to the Google Books 
 ![Search](https://user-images.githubusercontent.com/113391095/216455355-aa913ce0-6a98-493a-8138-4fcf385ae02e.png)
 
 ## Error Handling
-![Search Error Picture](https://user-images.githubusercontent.com/113391095/216455358-cf61e027-f4ac-4050-8a05-a67c317460df.png)
-![Search Error](https://user-images.githubusercontent.com/113391095/216455372-470949a4-6c16-47fb-bc06-3caed553e646.png)
-![Search No Internet](https://user-images.githubusercontent.com/113391095/216455386-47af1423-974d-4e53-9ecc-29f37233d934.png)
+Null Picture Response  | Invalid Search | No Internet
+------------- | ------------- | -------------
+![Search Error Picture](https://user-images.githubusercontent.com/113391095/216455358-cf61e027-f4ac-4050-8a05-a67c317460df.png)  | ![Search Error](https://user-images.githubusercontent.com/113391095/216455372-470949a4-6c16-47fb-bc06-3caed553e646.png) | ![Search No Internet](https://user-images.githubusercontent.com/113391095/216455386-47af1423-974d-4e53-9ecc-29f37233d934.png)
+
