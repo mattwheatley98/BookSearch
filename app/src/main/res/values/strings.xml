@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BookSearch</string>
+    <string name="app_name">Book Search</string>
     <string name="book_search">Book Search</string>
     <string name="search">Search</string>
     <string name="no_books_found">No books found!</string>
@@ -7,4 +7,8 @@
     <string name="search_for_a_book_to">Search for a book to get started!</string>
     <string name="loading_failed">Loading failed!</string>
     <string name="retry">Retry</string>
+    <string name="back_arrow">Back Arrow</string>
+    <string name="book_information">Book Information</string>
+    <string name="no_title_found">NO TITLE FOUND!</string>
+    <string name="no_authors_found">NO AUTHORS FOUND!</string>
 </resources>

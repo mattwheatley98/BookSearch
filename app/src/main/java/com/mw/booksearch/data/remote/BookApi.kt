@@ -9,5 +9,5 @@ interface BookApi {
     suspend fun getBooks(
         @Query("q") search: String,
         @Query("maxResults") queryResults: String = "40" //Maximum allowed results from the API.
-    ) : GetBooks
+    ): GetBooks
 }

@@ -1,12 +1,12 @@
-package com.mw.booksearch.presentation
+package com.mw.booksearch.presentation.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mw.booksearch.R
@@ -31,16 +30,16 @@ import com.mw.booksearch.domain.model.VolumeInfo
  */
 @Composable
 fun HomeScreen(
-    viewModel: BookSearchViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    viewModel: BookSearchViewModel,
+    navigateToBookDataScreen: () -> Unit,
 ) {
     when (viewModel.homeScreenUiState) {
         is HomeScreenUiState.Loading -> LoadingScreen()
-        is HomeScreenUiState.Success -> HomeScreenBody(
-            (viewModel.homeScreenUiState as HomeScreenUiState.Success).bookData,
-            modifier = modifier
-        )
         is HomeScreenUiState.Start -> StartScreen()
+        is HomeScreenUiState.Success -> HomeBody(
+            bookData = (viewModel.homeScreenUiState as HomeScreenUiState.Success).bookData,
+            onBookClick = { viewModel.updateVolumeInfoUiState(it); navigateToBookDataScreen() },
+        )
         else -> ErrorScreen(retryAction = { viewModel.getBooks() })
     }
 }
@@ -49,28 +48,34 @@ fun HomeScreen(
  * Body for [HomeScreen].
  */
 @Composable
-fun HomeScreenBody(bookData: GetBooks, modifier: Modifier = Modifier) {
+private fun HomeBody(
+    bookData: GetBooks,
+    onBookClick: (VolumeInfo) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.padding(6.dp)
     ) {
-        BookList(bookData = bookData)
+        BookList(bookData = bookData, onBookClick = onBookClick)
     }
+
+
 }
 
 /**
  * Displays a lazy vertical grid of queried book thumbnails if [bookData] is not null, or [InvalidSearch] if null.
  */
 @Composable
-fun BookList(bookData: GetBooks) {
+private fun BookList(bookData: GetBooks, onBookClick: (VolumeInfo) -> Unit) {
     if (bookData.bookItems != null) {
         LazyVerticalGrid(
             horizontalArrangement = Arrangement.Center,
             columns = GridCells.Adaptive(minSize = 150.dp),
         ) {
             items(items = bookData.bookItems) { bookItem ->
-                BookListEntry(volumeInfo = bookItem.volumeInfo)
+                BookListEntry(volumeInfo = bookItem.volumeInfo, onBookClick = onBookClick)
             }
         }
     } else {
@@ -82,7 +87,11 @@ fun BookList(bookData: GetBooks) {
  * Composable that displays in [BookList] if a search returns books.
  */
 @Composable
-fun BookListEntry(volumeInfo: VolumeInfo, modifier: Modifier = Modifier) {
+private fun BookListEntry(
+    volumeInfo: VolumeInfo,
+    onBookClick: (VolumeInfo) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Column(
             modifier = modifier
@@ -101,6 +110,7 @@ fun BookListEntry(volumeInfo: VolumeInfo, modifier: Modifier = Modifier) {
                 modifier = modifier
                     .height(200.dp)
                     .width(150.dp)
+                    .clickable { onBookClick(volumeInfo) }
             )
         }
     }
@@ -110,7 +120,7 @@ fun BookListEntry(volumeInfo: VolumeInfo, modifier: Modifier = Modifier) {
  * Composable that displays in [BookList] if a search returns no books.
  */
 @Composable
-fun InvalidSearch(modifier: Modifier = Modifier) {
+private fun InvalidSearch(modifier: Modifier = Modifier) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxSize()
@@ -128,9 +138,10 @@ fun InvalidSearch(modifier: Modifier = Modifier) {
  * Home screen for displaying the start message.
  */
 @Composable
-fun StartScreen(modifier: Modifier = Modifier) {
-    Box(
-        contentAlignment = Alignment.Center,
+private fun StartScreen(modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
     ) {
         Text(
@@ -140,11 +151,12 @@ fun StartScreen(modifier: Modifier = Modifier) {
         )
     }
 }
+
 /**
  * Home screen for displaying the loading image.
  */
 @Composable
-fun LoadingScreen(modifier: Modifier = Modifier) {
+private fun LoadingScreen(modifier: Modifier = Modifier) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxSize()
@@ -161,13 +173,17 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
  * Home screen for displaying an error message with re-attempt button.
  */
 @Composable
-fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
+private fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(stringResource(R.string.loading_failed), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text(
+            stringResource(R.string.loading_failed),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
         Button(onClick = retryAction) {
             Text(stringResource(R.string.retry), fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }

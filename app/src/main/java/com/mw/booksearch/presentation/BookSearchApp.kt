@@ -1,51 +1,66 @@
 package com.mw.booksearch.presentation
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mw.booksearch.R
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.mw.booksearch.presentation.common.BookSearchBottomBar
+import com.mw.booksearch.presentation.common.BookSearchTopBar
+import com.mw.booksearch.presentation.screens.BookInformationScreen
+import com.mw.booksearch.presentation.screens.BookSearchViewModel
+import com.mw.booksearch.presentation.screens.HomeScreen
+import com.mw.booksearch.presentation.util.BookSearchScreenNames
 
 /**
- * Main app composable that displays [HomeScreen], as well as bottom and top bars.
+ * Main app composable that uses a NavHost, [BookSearchTopBar], and [BookSearchBottomBar].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookSearchApp(viewModel: BookSearchViewModel = hiltViewModel()) {
-    Scaffold(
-        topBar = { TopAppBar(title = { Text(text = stringResource(R.string.book_search)) }) },
-        bottomBar = {
-            BottomAppBar() {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val focusManger = LocalFocusManager.current
-                    OutlinedTextField(
-                        value = viewModel.searchTextUiState.searchText,
-                        onValueChange = { viewModel.updateSearchTextUiState(it) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusManger.clearFocus() }),
-                        singleLine = true,
-                        modifier = Modifier.width(200.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Button(onClick = { viewModel.getBooks(); focusManger.clearFocus() }) {
-                        Text(text = stringResource(R.string.search))
-                    }
-                }
+fun BookSearchApp() {
+    val navController = rememberNavController()
+    val viewModel: BookSearchViewModel = hiltViewModel()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = BookSearchScreenNames.valueOf(
+        value = backStackEntry?.destination?.route ?: BookSearchScreenNames.HomeScreen.name
+    )
+    Scaffold(topBar = {
+        BookSearchTopBar(
+            currentScreenTitle = currentScreen.title,
+            canNavigateBack = navController.previousBackStackEntry != null,
+            navigateUp = { navController.navigateUp() }
+        )
+    }, bottomBar = {
+        BookSearchBottomBar(
+            searchTextUiState = viewModel.searchTextUiState,
+            onValueChange = { viewModel.updateSearchTextUiState(it) },
+            getBooks = { viewModel.getBooks() },
+            currentScreenTitle = currentScreen.title,
+            navigateUp = { navController.navigateUp() })
+    }) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = BookSearchScreenNames.HomeScreen.name,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(route = BookSearchScreenNames.HomeScreen.name) {
+                HomeScreen(
+                    navigateToBookDataScreen = { navController.navigate(BookSearchScreenNames.BookInformationScreen.name) },
+                    viewModel = viewModel
+                )
             }
-        }) { innerPadding ->
-        HomeScreen(modifier = Modifier.padding(innerPadding))
+            composable(route = BookSearchScreenNames.BookInformationScreen.name) {
+                BookInformationScreen(
+                    viewModel = viewModel
+                )
+            }
+        }
     }
 }
 
